@@ -11,19 +11,34 @@ def extract_date_from_filename(filename):
 
 def parse_html_report(html_content):
     soup = BeautifulSoup(html_content, 'html.parser')
-    table = soup.find('table', {'name': 'finging_report'})
     
-    if not table:
-        raise ValueError("Table 'finging_report' not found")
+    # Find all tables
+    tables = soup.find_all('table')
+    target_table = None
+    
+    # Look for the table that has both "finding_name" and "num_of_occurences" in its headers
+    for table in tables:
+        headers = [header.get_text(strip=True).lower() for header in table.find_all('th')]
+        if 'finding_name' in headers and 'num_of_occurences' in headers:
+            target_table = table
+            finding_name_idx = headers.index('finding_name')
+            occurences_idx = headers.index('num_of_occurences')
+            break
+    
+    if not target_table:
+        raise ValueError("Could not find table with required columns 'finding_name' and 'num_of_occurences'")
     
     findings = []
-    for row in table.find_all('tr')[1:]:  # Skip header row
-        cols = row.find_all('td')
-        if len(cols) >= 2:
-            finding_name = cols[0].get_text(strip=True)
+    # Skip header row and process data rows
+    for row in target_table.find_all('tr')[1:]:
+        cols = row.find_all(['td', 'th'])  # Some tables might use th for all cells
+        if len(cols) > max(finding_name_idx, occurences_idx):
+            finding_name = cols[finding_name_idx].get_text(strip=True)
             try:
-                occurrences = int(cols[1].get_text(strip=True))
-                findings.append((finding_name, occurrences))
+                # Remove any non-numeric characters (like commas) and convert to int
+                occurences_text = cols[occurences_idx].get_text(strip=True)
+                occurences = int(''.join(filter(str.isdigit, occurences_text)))
+                findings.append((finding_name, occurences))
             except ValueError:
                 continue
     

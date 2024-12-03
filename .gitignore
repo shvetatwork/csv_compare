@@ -1,2 +1,5 @@
 /.venv
 /Findings History.pdf
+__pycache__/models.cpython-313.pyc
+__pycache__/parser.cpython-313.pyc
+findings.db
