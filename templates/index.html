@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Findings Report Analyzer</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .upload-section {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: #f8f8f8;
+        }
+        .flash-messages {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #e8f5e9;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Findings Report Analyzer</h1>
+    
+    <div class="upload-section">
+        <h2>Upload New Report</h2>
+        <form method="post" action="{{ url_for('upload_file') }}" enctype="multipart/form-data">
+            <input type="file" name="file" accept=".html">
+            <input type="submit" value="Upload">
+        </form>
+    </div>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for message in messages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <h2>Findings Report</h2>
+    <table>
+        <tr>
+            <th>Finding Name</th>
+            {% for date in dates %}
+                <th>{{ date.strftime('%Y-%m-%d') }}</th>
+            {% endfor %}
+        </tr>
+        {% for row in findings_matrix %}
+            <tr>
+                <td>{{ row.finding_name }}</td>
+                {% for date in dates %}
+                    <td>{{ row[date.strftime('%Y-%m-%d')] }}</td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </table>
+</body>
+</html> 
